@@ -86,7 +86,7 @@ export const restoreHistory = (defaultLocation, routes, opts) => {
       window.history.replaceState(newState, null, window.location.href)
     }
 
-    return getIndexAndEntries(state.history || defaultHistory)
+    return getIndexAndEntries(state.history || defaultHistory, routes, opts)
   }
 
   // `getSet` simply sets the `defaultHistory` in `sessionStorage` if it's a fresh visitation

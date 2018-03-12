@@ -19,11 +19,11 @@ module.exports = wallaby => {
 
     tests: [
       // '__tests__/integration/**/*.js',
-      '__tests__/integration/params.js',
+      // '__tests__/integration/params.js',
       // '__tests__/integration/actions/changeBasename.js',
       // '__tests__/integration/browser/**/*.js',
       // '__tests__/integration/dispatchFrom.js',
-      // '__tests__/integration/browser/sessionStorage/**/*.js',
+      '__tests__/integration/browser/sessionStorage/historyFallback.js',
       // '__tests__/integration/browserPop/popCancelsAction.js',
       // '__tests__/integration/cancelPendingRequest.js',
       // '__tests__/integration/actions/history.js',
