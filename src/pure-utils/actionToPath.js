@@ -16,11 +16,13 @@ export default (
 ): string => {
   const route = routesMap[action.type]
   const routePath = typeof route === 'object' ? route.path : route
-  const params = typeof route === 'object'
-    ? _payloadToParams(route, action.payload)
-    : action.payload
+  const params =
+    typeof route === 'object'
+      ? _payloadToParams(route, action.payload)
+      : action.payload
 
-  const path = compileParamsToPath(routePath, params) || '/'
+  let path = compileParamsToPath(routePath, params) || '/'
+  path = path.replace(/%26/g, '&')
 
   const query =
     action.query ||
