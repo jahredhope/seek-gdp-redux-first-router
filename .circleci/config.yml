@@ -10,7 +10,6 @@ jobs:
       - run:
          name: Run unit test
          command: npm run test
-
   deploy:
     docker:
       - image: circleci/node:8.5
