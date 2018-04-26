@@ -23,7 +23,6 @@ export default (
 
   let path = compileParamsToPath(routePath, params) || '/'
   path = path.replace(/%26/g, '&')
-
   const query =
     action.query ||
     (action.meta && action.meta.query) ||
