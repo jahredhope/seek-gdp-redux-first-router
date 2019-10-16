@@ -9,6 +9,10 @@ import { NOT_FOUND } from '../src/index'
 import redirect from '../src/action-creators/redirect'
 import pathToAction from '../src/pure-utils/pathToAction'
 
+beforeEach(() => {
+  window.SSRtest = false
+})
+
 describe('middleware', () => {
   it('dispatches location-aware action, changes address bar + document.title', () => {
     const { store, history } = setupAll()
@@ -522,6 +526,17 @@ it('title and location options as selector functions', () => {
   store.getState() /*? $.location */
 
   expect(action).toMatchSnapshot()
+})
+
+it('QUERY: has initial query in state during initial onBeforeChange event', () => {
+  let query = null
+  const onBeforeChange = jest.fn(
+    (_, getState) => query = getState().location.query
+  )
+  setupAll('/first?param=something', { querySerializer, onBeforeChange })
+
+  expect(onBeforeChange).toHaveBeenCalledTimes(1)
+  expect(query).toEqual({ param: 'something' })
 })
 
 it('QUERY: dispatched as action.query', () => {

@@ -10,7 +10,11 @@ import pathToAction from '../src/pure-utils/pathToAction'
 import actionToPath from '../src/pure-utils/actionToPath'
 import changePageTitle from '../src/pure-utils/changePageTitle'
 
-import { NOT_FOUND } from '../src/index'
+import { NOT_FOUND, addRoutes } from '../src/index'
+
+beforeEach(() => {
+  window.SSRtest = false
+})
 
 it('isLocationAction(action) if has meta.location object', () => {
   let ret = isLocationAction({})
@@ -151,12 +155,23 @@ describe('pathToAction(path, routesMap)', () => {
   it('parse path containing number param into action with payload value set as integer instead of string', () => {
     const path = '/info/69'
     const routesMap = {
-      INFO_PARAM: { path: '/info/:param/' }
+      INFO_PARAM: { path: '/info/:param/', coerceNumbers: true }
     }
 
     const action = pathToAction(path, routesMap) /*? */
     expect(typeof action.payload.param).toEqual('number')
     expect(action.payload.param).toEqual(69)
+  })
+
+  it('parse path containing number param into action with payload value set as string instead of integer', () => {
+    const path = '/info/69'
+    const routesMap = {
+      INFO_PARAM: { path: '/info/:param/', coerceNumbers: false }
+    }
+
+    const action = pathToAction(path, routesMap) /*? */
+    expect(typeof action.payload.param).toEqual('string')
+    expect(action.payload.param).toEqual('69')
   })
 
   it('does not parse a blank string "" as NaN', () => {
@@ -186,6 +201,21 @@ describe('pathToAction(path, routesMap)', () => {
     }
 
     const action = pathToAction(path, routesMap, undefined, '/base') /*? */
+    expect(action.type).toEqual('FOO')
+  })
+
+  it('returns NOT_FOUND with a strict match with/without trailing delimiter', () => {
+    const path = '/foo/'
+    const routesMap = {
+      FOO: { path: '/foo' }
+    }
+
+    let strict = true
+    let action = pathToAction(path, routesMap, undefined, undefined, strict) /*? */
+    expect(action.type).toEqual(NOT_FOUND)
+
+    strict = false
+    action = pathToAction(path, routesMap, undefined, undefined, strict) /*? */
     expect(action.type).toEqual('FOO')
   })
 })
@@ -478,6 +508,159 @@ describe('confirmLeave()', () => {
     const { type } = store.getState().location
     expect(type).toEqual('FIRST')
     expect(history.location.pathname).toEqual('/first')
+  })
+
+  it('can block leaving after addRoutes if confirmLeave was missing on init', () => {
+    const firstRouteName = 'FIRST'
+
+    const firstRouteOptions = {
+      path: '/first'
+    }
+
+    const routesMap = {
+      [firstRouteName]: firstRouteOptions,
+      SECOND: '/second'
+    }
+
+    const displayConfirmLeave = jest.fn()
+    const options = { displayConfirmLeave }
+    const { store, history } = setupAll('/first', options, { routesMap })
+    const confirmLeave = jest.fn((state, action) => 'blocked')
+
+    store.dispatch(
+      addRoutes({
+        [firstRouteName]: {
+          ...firstRouteOptions,
+          confirmLeave
+        }
+      })
+    )
+
+    store.dispatch({ type: 'SECOND' })
+
+    const { type } = store.getState().location
+    expect(type).toEqual(firstRouteName)
+    expect(displayConfirmLeave).toBeCalled()
+    expect(history.location.pathname).toEqual('/first')
+    expect(confirmLeave).toBeCalled()
+  })
+
+  it('can block leaving after addRoutes if confirmLeave was passing on init', () => {
+    const firstRouteName = 'FIRST'
+
+    const firstRouteOptions = {
+      path: '/first'
+    }
+
+    const prevConfirmLeave = jest.fn((state, action) => undefined)
+    const nextConfirmLeave = jest.fn((state, action) => 'blocked')
+
+    const routesMap = {
+      [firstRouteName]: {
+        ...firstRouteOptions,
+        confirmLeave: prevConfirmLeave
+      },
+      SECOND: '/second'
+    }
+
+    const displayConfirmLeave = jest.fn()
+    const options = { displayConfirmLeave }
+    const { store, history } = setupAll('/first', options, { routesMap })
+
+    store.dispatch(
+      addRoutes({
+        [firstRouteName]: {
+          ...firstRouteOptions,
+          confirmLeave: nextConfirmLeave
+        }
+      })
+    )
+
+    store.dispatch({ type: 'SECOND' })
+
+    const { type } = store.getState().location
+    expect(type).toEqual(firstRouteName)
+    expect(displayConfirmLeave).toBeCalled()
+    expect(history.location.pathname).toEqual('/first')
+    expect(prevConfirmLeave).not.toBeCalled()
+    expect(nextConfirmLeave).toBeCalled()
+  })
+
+  it('can unblock leaving after addRoutes removing blocking confirmLeave', () => {
+    const firstRouteName = 'FIRST'
+
+    const firstRouteOptions = {
+      path: '/first'
+    }
+
+    const confirmLeave = jest.fn((state, action) => 'blocked')
+
+    const routesMap = {
+      [firstRouteName]: {
+        ...firstRouteOptions,
+        confirmLeave
+      },
+      SECOND: '/second'
+    }
+
+    const displayConfirmLeave = jest.fn()
+    const options = { displayConfirmLeave }
+    const { store, history } = setupAll('/first', options, { routesMap })
+
+    store.dispatch(
+      addRoutes({
+        [firstRouteName]: firstRouteOptions
+      })
+    )
+
+    store.dispatch({ type: 'SECOND' })
+
+    const { type } = store.getState().location
+    expect(type).toEqual('SECOND')
+    expect(displayConfirmLeave).not.toBeCalled()
+    expect(history.location.pathname).toEqual('/second')
+    expect(confirmLeave).not.toBeCalled()
+  })
+
+  it('can unblock leaving after addRoutes if confirmLeave was blocking on init', () => {
+    const firstRouteName = 'FIRST'
+
+    const firstRouteOptions = {
+      path: '/first'
+    }
+
+    const prevConfirmLeave = jest.fn((state, action) => 'blocked')
+    const nextConfirmLeave = jest.fn((state, action) => undefined)
+
+    const routesMap = {
+      [firstRouteName]: {
+        ...firstRouteOptions,
+        confirmLeave: prevConfirmLeave
+      },
+      SECOND: '/second'
+    }
+
+    const displayConfirmLeave = jest.fn()
+    const options = { displayConfirmLeave }
+    const { store, history } = setupAll('/first', options, { routesMap })
+
+    store.dispatch(
+      addRoutes({
+        [firstRouteName]: {
+          ...firstRouteOptions,
+          confirmLeave: nextConfirmLeave
+        }
+      })
+    )
+
+    store.dispatch({ type: 'SECOND' })
+
+    const { type } = store.getState().location
+    expect(type).toEqual('SECOND')
+    expect(displayConfirmLeave).not.toBeCalled()
+    expect(history.location.pathname).toEqual('/second')
+    expect(prevConfirmLeave).not.toBeCalled()
+    expect(nextConfirmLeave).toBeCalled()
   })
 
   it('can leave throws (React Native where window.confirm does not exist)', () => {

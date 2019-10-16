@@ -3,20 +3,27 @@
   "version": "0.0.1-rudy",
   "description": "think of your app in states not routes (and, yes, while keeping the address bar in sync)",
   "main": "dist/index.js",
+  "module": "dist/es",
+  "engines": {
+    "node": ">=6.0.0"
+  },
   "scripts": {
     "build": "babel src -d dist",
-    "build:umd": "BABEL_ENV=commonjs NODE_ENV=development webpack src/index.js dist/seek-gdp-redux-first-router.js",
-    "build:umd:min": "BABEL_ENV=commonjs NODE_ENV=production webpack src/index.js dist/seek-gdp-redux-first-router.min.js",
+    "build:es": "BABEL_ENV=es babel src -d dist/es",
+    "build:umd": "BABEL_ENV=commonjs NODE_ENV=development webpack src/index.js -o dist/seek-gdp-redux-first-router.js",
+    "build:umd:min": "BABEL_ENV=commonjs NODE_ENV=production webpack src/index.js -o dist/seek-gdp-redux-first-router.min.js",
     "flow-copy": "flow-copy-source src dist",
     "flow-watch": "clear; printf \"\\033[3J\" & npm run flow & fswatch -o ./ | xargs -n1 -I{} sh -c 'clear; printf \"\\033[3J\" && npm run flow'",
-    "flow": "flow; test $? -eq 0 -o $? -eq 2",
+    "flow": "npm run flow-copy && flow; test $? -eq 0 -o $? -eq 2",
     "clean": "rimraf dist && mkdir dist && rimraf coverage",
     "test": "jest",
     "lint": "eslint --fix ./",
     "format": "prettier --single-quote --parser=flow --semi=false --write '{src,__tests__,__test-helpers__}/**/*.js' && npm run lint",
     "cm": "git-cz",
-    "semantic-release": "semantic-release pre && npm publish && semantic-release post",
-    "prepublish": "npm run clean && npm run build && npm run flow-copy && npm run build:umd && npm run build:umd:min"
+    "semantic-release": "npx semantic-release",
+    "standard-version": "node_modules/.bin/standard-version",
+    "local-semantic-release": "git checkout master; git pull origin master && npm run standard-version && git push --follow-tags origin master && npm publish",
+    "prepublishOnly": "npm run clean && npm run build && npm run flow-copy && npm run build:umd && npm run build:umd:min && npm run build:es"
   },
   "release": {
     "verifyConditions": "condition-circle",
@@ -26,7 +33,10 @@
     "type": "git",
     "url": "https://github.com/seekinternational/seek-gdp-redux-first-router.git"
   },
-  "author": "James Gillmore <james@seekinternational.com>",
+  "author": "James Gillmore <james@faceyspacey.com>",
+  "maintainers": [
+    "Zack Jackson <zack@ScriptedAlchemy.com>"
+  ],
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/seekinternational/seek-gdp-redux-first-router/issues"
@@ -42,6 +52,7 @@
     "babel-eslint": "^7.2.3",
     "babel-loader": "^7.0.0",
     "babel-plugin-transform-flow-strip-types": "^6.22.0",
+    "babel-preset-env": "^1.7.0",
     "babel-preset-es2015": "^6.24.1",
     "babel-preset-flow": "^6.23.0",
     "babel-preset-react": "^6.24.1",
@@ -55,8 +66,8 @@
     "eslint-plugin-import": "^2.2.0",
     "eslint-plugin-jsx-a11y": "^4.0.0",
     "eslint-plugin-react": "^6.10.3",
-    "flow-bin": "^0.54.1",
-    "flow-copy-source": "^1.1.0",
+    "flow-bin": "^0.82.0",
+    "flow-copy-source": "^2.0.2",
     "husky": "^0.13.2",
     "jest": "^21.1.0",
     "lint-staged": "^3.4.0",
@@ -65,9 +76,13 @@
     "redux": "^3.6.0",
     "redux-thunk": "^2.2.0",
     "rimraf": "^2.5.4",
-    "semantic-release": "^6.3.2",
+    "semantic-release": "^15.9.17",
+    "snyk": "^1.100.1",
+    "standard-version": "^4.4.0",
     "travis-github-status": "^1.5.4",
-    "webpack": "2.4.1"
+    "uglifyjs-webpack-plugin": "^2.0.1",
+    "webpack": "4.20.2",
+    "webpack-cli": "^3.1.2"
   },
   "peerDependencies": {
     "redux": "*"

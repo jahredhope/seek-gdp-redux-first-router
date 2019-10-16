@@ -37,6 +37,7 @@ export default (
 const _payloadToParams = (route: Route, params: Payload = {}): Params =>
   Object.keys(params).reduce((sluggifedParams, key) => {
     const segment = params[key]
+    // $FlowFixMe
     sluggifedParams[key] = transformSegment(segment, route, key)
     return sluggifedParams
   }, {})
@@ -46,7 +47,8 @@ const transformSegment = (segment: string, route: Route, key: string) => {
     return route.toPath(segment, key)
   }
   else if (typeof segment === 'string') {
-    if (segment.indexOf('/') > -1) {
+    // Ask James "should it return arrays?"
+    if (segment.includes('/')) {
       return segment.split('/')
     }
 

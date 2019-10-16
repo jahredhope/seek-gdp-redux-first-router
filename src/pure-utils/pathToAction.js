@@ -10,7 +10,8 @@ export default (
   pathname: string,
   routesMap: RoutesMap,
   serializer?: QuerySerializer,
-  basename?: string = getOptions().basename
+  basename?: string | void = getOptions().basename,
+  strict?: boolean | void = getOptions().strict
 ): ReceivedAction => {
   const parts = pathname.split('?')
   const search = parts[1]
@@ -32,7 +33,7 @@ export default (
       continue
     }
 
-    const { re, keys: k } = compilePath(regPath)
+    const { re, keys: k } = compilePath(regPath, { strict })
     match = re.exec(pathname)
     keys = k
     i++
@@ -43,6 +44,10 @@ export default (
 
     const capitalizedWords =
       typeof routes[i] === 'object' && routes[i].capitalizedWords
+
+
+    const coerceNumbers =
+      typeof routes[i] === 'object' && routes[i].coerceNumbers
 
     const fromPath =
       routes[i] &&
@@ -60,7 +65,7 @@ export default (
         if (fromPath) {
           val = fromPath && fromPath(val, key.name)
         }
-        else if (isNumber(val)) {
+        else if (coerceNumbers && isNumber(val)) {
           val = parseFloat(val)
         }
         else if (capitalizedWords) {

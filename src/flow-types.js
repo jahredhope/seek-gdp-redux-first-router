@@ -12,8 +12,9 @@ export type Bag = {
 }
 
 export type RouteObject = {
-  path: string,
+  path?: string,
   capitalizedWords?: boolean,
+  coerceNumbers?: boolean,
   toPath?: (param: string, key?: string) => string,
   fromPath?: (path: string, key?: string) => string,
   thunk?: (
@@ -49,8 +50,7 @@ export type Navigators = {
   [key: string]: Navigator
 }
 
-export type Routes = Array<Route>
-export type RouteNames = Array<string>
+export type Routes = Array<Route> // eslint-disable-line no-undef
 
 export type SelectLocationState = (state: Object) => LocationState
 export type SelectTitleState = (state: Object) => string
@@ -65,7 +65,7 @@ export type DisplayConfirmLeave = (
   callback: (canLeave: boolean) => void
 ) => void
 
-export type Options = {
+export type Options = { // eslint-disable-line no-undef
   title?: string | SelectTitleState,
   location?: string | SelectLocationState,
   notFoundPath?: string,
@@ -99,12 +99,13 @@ export type Options = {
       navigationAction: ?NavigationAction
     }
   },
+  strict?: boolean,
   extra?: any
 }
 
 export type ScrollBehavior = Object
 
-export type Params = Object
+export type Params = Object // eslint-disable-line no-undef
 export type Payload = Object
 
 export type LocationState = {
@@ -165,7 +166,8 @@ export type Action = {
   payload: Payload,
   meta: Meta,
   query?: Object,
-  navKey?: ?string
+  navKey?: ?string,
+  error?: ?mixed
 }
 
 export type ReceivedAction = {
@@ -175,18 +177,6 @@ export type ReceivedAction = {
   query?: Object,
   search?: string,
   navKey?: ?string
-}
-
-export type ReceivedActionMeta = {
-  type: string,
-  payload: Payload,
-  query?: Object,
-  navKey?: ?string,
-  meta: {
-    notFoundPath?: string,
-    query?: Object,
-    search?: string
-  }
 }
 
 export type Listener = (HistoryLocation, HistoryAction) => void
@@ -224,6 +214,6 @@ export type HistoryLocation = {
 
 export type HistoryAction = string
 
-export type Document = Object
+export type Document = Object // eslint-disable-line no-undef
 
 export type Store = ReduxStore<*, *>

@@ -1,3 +1,4 @@
+// @flow
 export {
   default as connectRoutes,
   push,
@@ -33,8 +34,6 @@ export type {
   RouteObject,
   Route,
   RoutesMap,
-  Routes,
-  RouteNames,
   Options,
   Params,
   Payload,
